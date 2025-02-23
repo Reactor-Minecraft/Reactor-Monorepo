@@ -60,5 +60,7 @@ public class PlayerJoinListener {
 
         itemStack.getComponents().put(ItemComponent.CUSTOM_NAME, ChatLegacy.format("&aCustom &e&lItem"));
         event.getPlayer().getInventory().setItem(36, itemStack);
+
+        event.getPlayer().setExperience(3500F);
     }
 }

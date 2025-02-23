@@ -3,20 +3,22 @@ package ink.reactor.server.player;
 import java.util.UUID;
 
 import ink.reactor.api.inventory.InventoryHolder;
+import ink.reactor.api.player.ExperienceCalculator;
 import ink.reactor.api.player.Player;
 import ink.reactor.api.player.connection.PlayerConnection;
 import ink.reactor.api.player.data.PlayerInventory;
 import ink.reactor.chat.component.ChatComponent;
 import ink.reactor.chat.component.RawComponent;
 import ink.reactor.chat.util.ComponentCombiner;
-import ink.reactor.entity.effect.MobEffect;
-import ink.reactor.item.data.potion.PotionEffectType;
 import ink.reactor.protocol.outbound.play.*;
 import ink.reactor.server.player.adapter.PlayerLiving;
+import lombok.Getter;
 
 public final class ReactorPlayer extends Player implements InventoryHolder {
 
     private final ReactorPlayerInventory reactorPlayerInventory = new ReactorPlayerInventory(this);
+
+    @Getter
     private final PlayerLiving living = PlayerLiving.create(this);
 
     public ReactorPlayer(String name, UUID uuid, PlayerConnection connection) {
@@ -84,8 +86,30 @@ public final class ReactorPlayer extends Player implements InventoryHolder {
     public void sendActionBar(ChatComponent[] component) {
         getConnection().sendPacket(new PacketOutSetActionBarText(component));
     }
-  
-    public PlayerLiving getLiving() {
-        return living;
+
+    @Override
+    public void setLevel(int level) {
+        final int totalExperience = ExperienceCalculator.getRecollectedExperience(level);
+        final float barPercentage = ExperienceCalculator.getExperienceBarPercentage(totalExperience);
+        getConnection().sendPacket(new PacketOutSetExperience(barPercentage, level, totalExperience));
+    }
+
+    @Override
+    public void setExperience(float experience) {
+        final int level = ExperienceCalculator.getCurrentLevelFromExperience(experience);
+        final float barPercentage = ExperienceCalculator.getExperienceBarPercentage(experience);
+        getConnection().sendPacket(new PacketOutSetExperience(barPercentage, level, (int) experience));
+    }
+
+    @Override
+    public int getLevel() {
+        final float experience = getExperience();
+        return ExperienceCalculator.getCurrentLevelFromExperience(experience);
+    }
+
+    @Override
+    public float getRequiredExperience() {
+        final int level = getLevel();
+        return ExperienceCalculator.getRequiredExperienceToLevelUp(level);
     }
 }

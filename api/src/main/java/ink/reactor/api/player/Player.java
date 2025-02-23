@@ -46,6 +46,8 @@ public abstract class Player implements CommandSender, MinecraftEntityMetadata, 
     private boolean textFiltering;
     private boolean serverListings;
 
+    private float experience;
+
     private World world;
 
     public abstract PlayerInventory getInventory();
@@ -57,6 +59,11 @@ public abstract class Player implements CommandSender, MinecraftEntityMetadata, 
     public abstract void clearTitles();
 
     public abstract void sendActionBar(final ChatComponent[] component);
+
+    public abstract void setLevel(int level);
+    public abstract void setExperience(float experience);
+    public abstract int getLevel();
+    public abstract float getRequiredExperience();
 
     @Override
     public final boolean equals(Object obj) {
